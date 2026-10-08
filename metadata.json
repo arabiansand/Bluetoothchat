@@ -1,0 +1,6 @@
+{
+  "name": "NearbyChat",
+  "description": "Offline peer-to-peer messaging app using Bluetooth Low Energy (BLE) for encrypted local chat without internet.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
