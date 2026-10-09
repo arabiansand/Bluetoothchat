@@ -6,7 +6,8 @@ enum class ConnectionStatus {
     CONNECTED,
     DISCONNECTED,
     RECONNECTING,
-    FAILED
+    FAILED,
+    SEARCHING
 }
 
 enum class MessageDeliveryStatus {
@@ -28,7 +29,8 @@ data class Peer(
     val displayName: String,
     val connectionState: ConnectionStatus = ConnectionStatus.AVAILABLE,
     val lastSeen: Long = System.currentTimeMillis(),
-    val deviceAddress: String? = null
+    val deviceAddress: String? = null,
+    val rssi: Int? = null
 )
 
 data class Conversation(

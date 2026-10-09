@@ -62,6 +62,12 @@ android {
   }
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+  if (name.contains("UnitTest")) {
+    libraries.from(fileTree("build/intermediates/built_in_kotlinc/debug/compileDebugKotlin/classes"))
+  }
+}
+
 // Configure the Secrets Gradle Plugin to use .env and .env.example files
 // to match the convention used in Web projects.
 secrets {

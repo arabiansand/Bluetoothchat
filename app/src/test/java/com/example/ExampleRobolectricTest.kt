@@ -18,4 +18,12 @@ class ExampleRobolectricTest {
     val appName = context.getString(R.string.app_name)
     assertEquals("NearbyChat", appName)
   }
+
+  @Test
+  fun `verify connection status string resources`() {
+    val context = ApplicationProvider.getApplicationContext<Context>()
+    assertEquals("Connected", context.getString(R.string.connected))
+    assertEquals("Disconnected", context.getString(R.string.disconnected))
+    assertEquals("Searching…", context.getString(R.string.searching))
+  }
 }

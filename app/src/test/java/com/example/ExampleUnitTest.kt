@@ -6,10 +6,12 @@ import com.example.domain.model.Message
 import com.example.domain.model.MessageDeliveryStatus
 import com.example.domain.model.Peer
 import com.example.domain.model.User
+import com.example.transport.ble.BleConstants
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.nio.charset.StandardCharsets
 
 class ExampleUnitTest {
 
@@ -48,9 +50,11 @@ class ExampleUnitTest {
     fun peerModel_initialConnectionState_isAvailable() {
         val peer = Peer(
             id = "peer-001",
-            displayName = "Alex"
+            displayName = "Alex",
+            rssi = -64
         )
         assertEquals(ConnectionStatus.AVAILABLE, peer.connectionState)
+        assertEquals(-64, peer.rssi)
     }
 
     @Test
@@ -60,5 +64,19 @@ class ExampleUnitTest {
         assertEquals(0, diag.messagesSent)
         assertEquals(0, diag.messagesReceived)
         assertEquals(ConnectionStatus.DISCONNECTED, diag.connectionStatus)
+    }
+
+    @Test
+    fun bleConstants_serviceUuidAndFraming_areValid() {
+        assertNotNull(BleConstants.SERVICE_UUID)
+        assertNotNull(BleConstants.CHARACTERISTIC_WRITE_UUID)
+        assertNotNull(BleConstants.CHARACTERISTIC_NOTIFY_UUID)
+        assertEquals("NC:", BleConstants.ADVERT_PREFIX)
+
+        val payload = "${BleConstants.ADVERT_PREFIX}usr123:Alex"
+        assertTrue(payload.startsWith(BleConstants.ADVERT_PREFIX))
+        val parts = payload.removePrefix(BleConstants.ADVERT_PREFIX).split(":")
+        assertEquals("usr123", parts[0])
+        assertEquals("Alex", parts[1])
     }
 }

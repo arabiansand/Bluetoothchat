@@ -20,12 +20,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BluetoothDisabled
 import androidx.compose.material.icons.filled.BluetoothSearching
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.R
 import com.example.domain.model.ConnectionStatus
+import com.example.domain.model.DiagnosticsInfo
 import com.example.domain.model.Peer
 import com.example.ui.components.ConnectionStatusChip
 
@@ -58,11 +63,18 @@ fun NearbyScreen(
     isDiscoveryActive: Boolean,
     activeConnectionState: ConnectionStatus,
     activePeer: Peer?,
+    diagnostics: DiagnosticsInfo,
+    onRequestPermissions: () -> Unit,
+    onEnableBluetooth: () -> Unit,
     onToggleDiscovery: () -> Unit,
     onRefreshScan: () -> Unit,
     onPeerClicked: (Peer) -> Unit,
     onOpenSettings: () -> Unit
 ) {
+    val isHardwareMissing = diagnostics.bluetoothState.contains("HARDWARE NOT AVAILABLE", ignoreCase = true)
+    val isBluetoothDisabled = diagnostics.bluetoothState.contains("DISABLED", ignoreCase = true)
+    val isPermissionsNeeded = diagnostics.bluetoothState.contains("PERMISSIONS", ignoreCase = true)
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -110,6 +122,130 @@ fun NearbyScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            // Environment Alert Banners
+            if (isPermissionsNeeded) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .testTag("permissions_banner"),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Security,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Bluetooth Permissions Needed",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onErrorContainer
+                            )
+                            Text(
+                                text = "Allow Nearby Devices permission to scan and advertise.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                        Button(
+                            onClick = onRequestPermissions,
+                            modifier = Modifier.testTag("grant_permission_button"),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Allow")
+                        }
+                    }
+                }
+            } else if (isBluetoothDisabled) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .testTag("bluetooth_disabled_banner"),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.BluetoothDisabled,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Bluetooth is Turned Off",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                            Text(
+                                text = "Enable Bluetooth to discover nearby phones.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                        Button(
+                            onClick = onEnableBluetooth,
+                            modifier = Modifier.testTag("enable_bluetooth_button")
+                        ) {
+                            Text("Turn On")
+                        }
+                    }
+                }
+            } else if (isHardwareMissing) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Cloud Emulator VM Mode",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Hardware Bluetooth radios do not exist in cloud VMs. Install the APK on two physical Android phones to exchange real BLE radio signals.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
             // Scanning Control Bar
             Row(
                 modifier = Modifier
@@ -119,7 +255,15 @@ fun NearbyScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Button(
-                    onClick = onToggleDiscovery,
+                    onClick = {
+                        if (isPermissionsNeeded) {
+                            onRequestPermissions()
+                        } else if (isBluetoothDisabled) {
+                            onEnableBluetooth()
+                        } else {
+                            onToggleDiscovery()
+                        }
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .testTag("scan_toggle_button"),
@@ -141,7 +285,15 @@ fun NearbyScreen(
                 }
 
                 OutlinedButton(
-                    onClick = onRefreshScan,
+                    onClick = {
+                        if (isPermissionsNeeded) {
+                            onRequestPermissions()
+                        } else if (isBluetoothDisabled) {
+                            onEnableBluetooth()
+                        } else {
+                            onRefreshScan()
+                        }
+                    },
                     modifier = Modifier.testTag("scan_refresh_button"),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -155,7 +307,7 @@ fun NearbyScreen(
                 }
             }
 
-            // Discovered Peers List or Truthful Empty State
+            // Discovered Peers List or Empty State
             if (discoveredPeers.isEmpty()) {
                 Box(
                     modifier = Modifier
@@ -253,11 +405,26 @@ fun PeerCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = "ID: ${peer.id}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = if (peer.deviceAddress != null) "BLE: ${peer.deviceAddress}" else "ID: ${peer.id}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (peer.rssi != null) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        val signalLabel = when {
+                            peer.rssi >= -60 -> "Strong"
+                            peer.rssi >= -75 -> "Good"
+                            else -> "Fair"
+                        }
+                        Text(
+                            text = "• ${peer.rssi} dBm ($signalLabel)",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
 
             ConnectionStatusChip(

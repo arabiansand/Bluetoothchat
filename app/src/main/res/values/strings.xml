@@ -16,6 +16,7 @@
     <string name="no_nearby_subtitle">Make sure Bluetooth is enabled and NearbyChat is open on the other phone.</string>
     <string name="available">Available</string>
     <string name="connecting">Connecting…</string>
+    <string name="searching">Searching…</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>
     <string name="reconnecting">Reconnecting…</string>
@@ -41,4 +42,10 @@
     <string name="permission_title">Nearby Device Access</string>
     <string name="permission_explanation">NearbyChat requires Bluetooth permissions to discover and exchange messages with nearby devices without internet.</string>
     <string name="grant_permission">Allow Access</string>
+    <string name="nearby_devices_dialog_title">Nearby BLE Devices</string>
+    <string name="nearby_devices_empty_title">No Nearby Devices Detected</string>
+    <string name="nearby_devices_empty_desc">Ensure Bluetooth is enabled on the other phone and NearbyChat is open. Devices will discover each other over 2.4GHz BLE.</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_reconnect">Reconnect</string>
 </resources>

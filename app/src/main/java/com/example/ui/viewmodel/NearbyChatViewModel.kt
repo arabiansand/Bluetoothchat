@@ -73,6 +73,23 @@ class NearbyChatViewModel(
                 _incomingConnectionRequest.value = peer
             }
         }
+
+        viewModelScope.launch {
+            transport.incomingRawMessages.collect { incoming ->
+                val conversationId = "conv_${incoming.senderId}"
+                val incomingMessage = Message(
+                    id = UUID.randomUUID().toString(),
+                    conversationId = conversationId,
+                    senderId = incoming.senderId,
+                    recipientId = currentUser.value.id,
+                    timestamp = System.currentTimeMillis(),
+                    type = "text",
+                    payload = incoming.payload,
+                    status = MessageDeliveryStatus.DELIVERED
+                )
+                chatRepository.saveMessage(incomingMessage)
+            }
+        }
     }
 
     fun updateDisplayName(name: String) {
@@ -182,7 +199,9 @@ class NearbyChatViewModelFactory(
             val db = AppDatabase.getInstance(application)
             val userRepo = UserRepository(application)
             val chatRepo = ChatRepositoryImpl(db.conversationDao(), db.messageDao())
-            val transport = ContractNearbyTransport()
+            val transport = com.example.transport.ble.BleNearbyTransport(application) {
+                userRepo.currentUser.value
+            }
             return NearbyChatViewModel(application, userRepo, chatRepo, transport) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
